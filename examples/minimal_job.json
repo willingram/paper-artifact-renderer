@@ -1,0 +1,42 @@
+{
+  "seed": 42,
+  "style": {
+    "pen": "blue-ballpoint",
+    "handwriting_variant": "print",
+    "writer_drift": 0.35,
+    "paper": "ruled-a4-portrait"
+  },
+  "photo": {
+    "long_edge_px": 1400,
+    "skew_deg_range": [0.4, 1.2],
+    "perspective": "slight",
+    "lighting": "indoor-varied",
+    "background": "desk"
+  },
+  "pdf": {
+    "filename": "sample_scan.pdf",
+    "text_layer": false
+  },
+  "table_style": "preprinted",
+  "metadata_profile": "phone-scan",
+  "document_datetime": "2026-04-15T14:26:00+01:00",
+  "pages": [
+    {
+      "header_lines": ["Line tally", "Example shift note"],
+      "table": {
+        "columns": ["DATE", "OK", "SCRAP", "NOTES"],
+        "rows": [
+          ["15/04", "118", "3", "normal start"],
+          ["16/04", "121", "4", "checked at break"]
+        ]
+      },
+      "annotations": [
+        {
+          "text": "Counters initialled at handover.",
+          "placement": "below-table",
+          "style": "normal"
+        }
+      ]
+    }
+  ]
+}
