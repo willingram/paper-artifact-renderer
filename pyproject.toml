@@ -34,6 +34,7 @@ dev = [
 ]
 
 [project.scripts]
+par = "paper_artifact_renderer.cli:main"
 paper-artifact-renderer = "paper_artifact_renderer.cli:main"
 
 [tool.setuptools.packages.find]
