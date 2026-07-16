@@ -3,12 +3,14 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from . import __version__
 from .renderer import render_job
 from .verify import verify_output
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(prog="paper-artifact-renderer")
+    parser = argparse.ArgumentParser(prog="par")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     render_parser = subparsers.add_parser("render", help="Render a JSON job file")

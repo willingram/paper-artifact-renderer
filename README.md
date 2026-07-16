@@ -12,14 +12,14 @@ With `uv`:
 
 ```sh
 uv tool install .
-paper-artifact-renderer --help
+par --help
 ```
 
 For editable development:
 
 ```sh
 uv sync --extra dev
-uv run paper-artifact-renderer --help
+uv run par --help
 ```
 
 With `pip`:
@@ -47,13 +47,15 @@ python -m pip install -e ".[dev]"
 Render the included example:
 
 ```sh
-paper-artifact-renderer render --job examples/minimal_job.json --out outputs/example
-paper-artifact-renderer verify --out outputs/example
+par render --job examples/minimal_job.json --out outputs/example
+par verify --out outputs/example
 ```
 
-The module entry point is equivalent:
+The long command and module entry point are equivalent supported forms:
 
 ```sh
+paper-artifact-renderer render --job examples/minimal_job.json --out outputs/example
+paper-artifact-renderer verify --out outputs/example
 python -m paper_artifact_renderer render --job examples/minimal_job.json --out outputs/example
 python -m paper_artifact_renderer verify --out outputs/example
 ```
@@ -76,7 +78,7 @@ See [examples/minimal_job.json](examples/minimal_job.json) for a complete small 
 
 ## Verification
 
-`paper-artifact-renderer verify` expects a render directory containing exactly one `.truth.json` sidecar. It checks:
+`par verify` expects a render directory containing exactly one `.truth.json` sidecar. It checks:
 
 - every listed JPEG decodes;
 - optional PDF parses with `pypdf` and `pdfplumber`;
