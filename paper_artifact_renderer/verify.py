@@ -58,10 +58,13 @@ def verify_output(out_dir: Path) -> list[str]:
     if pdf_name:
         _verify_pdf_no_text(out_dir / pdf_name, len(images))
         metadata = _verify_pdf_metadata(out_dir / pdf_name)
-        _verify_pdf_renders(out_dir / pdf_name, len(images))
+        poppler_checked = _verify_pdf_renders(out_dir / pdf_name, len(images))
         report.append(f"PDF {pdf_name} parses with zero extractable text")
         report.append(f"PDF metadata acceptable: {metadata}")
-        report.append(f"PDF renders {len(images)} page(s) with Poppler")
+        if poppler_checked:
+            report.append(f"PDF renders {len(images)} page(s) with Poppler")
+        else:
+            report.append("PDF render check skipped (Poppler unavailable)")
 
     temp, fresh_manifest = render_to_temp(job)
     try:
@@ -136,10 +139,10 @@ def _verify_pdf_metadata(pdf_path: Path) -> dict[str, str]:
     return metadata
 
 
-def _verify_pdf_renders(pdf_path: Path, expected_pages: int) -> None:
+def _verify_pdf_renders(pdf_path: Path, expected_pages: int) -> bool:
     pdftoppm = _find_pdftoppm()
     if not pdftoppm:
-        return
+        return False
     with tempfile.TemporaryDirectory(prefix="paper_artifact_pdf_render_") as temp_dir:
         prefix = str(Path(temp_dir) / "page")
         result = subprocess.run(
@@ -165,6 +168,7 @@ def _verify_pdf_renders(pdf_path: Path, expected_pages: int) -> None:
         rendered = sorted(Path(temp_dir).glob("page-*.png"))
         if len(rendered) != expected_pages:
             raise RuntimeError(f"Poppler rendered {len(rendered)} page(s), expected {expected_pages}")
+    return True
 
 
 def _find_pdftoppm() -> str | None:
