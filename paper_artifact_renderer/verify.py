@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import filecmp
 import json
+import ntpath
 import shutil
 import subprocess
 import tempfile
@@ -33,7 +34,7 @@ def verify_output(out_dir: Path) -> list[str]:
     sidecars = sorted(out_dir.glob("*.truth.json"))
     if len(sidecars) != 1:
         raise RuntimeError(f"expected exactly one *.truth.json in {out_dir}, found {len(sidecars)}")
-    sidecar_path = sidecars[0]
+    sidecar_path = _resolve_output_member(out_dir, sidecars[0].name, "truth sidecar")
     with sidecar_path.open("r", encoding="utf-8") as handle:
         truth = json.load(handle)
 
@@ -46,36 +47,41 @@ def verify_output(out_dir: Path) -> list[str]:
     images = truth.get("images")
     if not isinstance(images, list) or len(images) != truth.get("page_count"):
         raise RuntimeError("truth sidecar image list does not match page_count")
-    for image_name in images:
-        image_path = out_dir / image_name
+    image_names: list[str] = []
+    for index, image_name in enumerate(images):
+        image_path = _resolve_output_member(out_dir, image_name, f"truth.images[{index}]")
         if not image_path.exists():
             raise RuntimeError(f"missing image {image_name}")
         with Image.open(image_path) as image:
             image.verify()
         report.append(f"decoded {image_name}")
+        image_names.append(image_name)
 
-    pdf_name = truth.get("pdf")
-    if pdf_name:
-        _verify_pdf_no_text(out_dir / pdf_name, len(images))
-        metadata = _verify_pdf_metadata(out_dir / pdf_name)
-        poppler_checked = _verify_pdf_renders(out_dir / pdf_name, len(images))
+    pdf_value = truth.get("pdf")
+    pdf_name: str | None = None
+    if pdf_value is not None:
+        pdf_path = _resolve_output_member(out_dir, pdf_value, "truth.pdf")
+        pdf_name = pdf_value
+        _verify_pdf_no_text(pdf_path, len(image_names))
+        metadata = _verify_pdf_metadata(pdf_path)
+        poppler_checked = _verify_pdf_renders(pdf_path, len(image_names))
         report.append(f"PDF {pdf_name} parses with zero extractable text")
         report.append(f"PDF metadata acceptable: {metadata}")
         if poppler_checked:
-            report.append(f"PDF renders {len(images)} page(s) with Poppler")
+            report.append(f"PDF renders {len(image_names)} page(s) with Poppler")
         else:
             report.append("PDF render check skipped (Poppler unavailable)")
 
     temp, fresh_manifest = render_to_temp(job)
     try:
         fresh_out = Path(temp.name)
-        expected_names = list(images)
+        expected_names = list(image_names)
         if pdf_name:
             expected_names.append(pdf_name)
         expected_names.append(sidecar_path.name)
         for name in expected_names:
-            current = out_dir / name
-            fresh = fresh_out / name
+            current = _resolve_output_member(out_dir, name, f"determinism input {name!r}")
+            fresh = _resolve_output_member(fresh_out, name, f"determinism output {name!r}")
             if not fresh.exists():
                 raise RuntimeError(f"determinism re-render did not create {name}")
             if not filecmp.cmp(current, fresh, shallow=False):
@@ -85,6 +91,29 @@ def verify_output(out_dir: Path) -> list[str]:
         temp.cleanup()
 
     return report
+
+
+def _resolve_output_member(out_dir: Path, value: object, field: str) -> Path:
+    if not isinstance(value, str) or not value:
+        raise RuntimeError(f"{field}: expected a non-empty path-safe basename, got {value!r}")
+    if (
+        value in {".", ".."}
+        or "\x00" in value
+        or "/" in value
+        or "\\" in value
+        or ntpath.splitdrive(value)[0]
+        or value.endswith((" ", "."))
+    ):
+        raise RuntimeError(f"{field}: expected a path-safe basename without paths or traversal, got {value!r}")
+
+    root = out_dir.resolve()
+    try:
+        resolved = (root / value).resolve(strict=False)
+    except (OSError, RuntimeError) as exc:
+        raise RuntimeError(f"{field}: cannot safely resolve output member {value!r}: {exc}") from exc
+    if not resolved.is_relative_to(root):
+        raise RuntimeError(f"{field}: referenced path escapes output directory: {value!r}")
+    return resolved
 
 
 def _verify_pdf_no_text(pdf_path: Path, expected_pages: int) -> None:
