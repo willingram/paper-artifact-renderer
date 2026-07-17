@@ -29,8 +29,10 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = [
+    "build>=1.2",
     "pytest>=8",
     "ruff>=0.8",
+    "twine>=6",
 ]
 
 [project.scripts]

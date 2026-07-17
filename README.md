@@ -100,14 +100,23 @@ Install Poppler separately if you want that extra check:
 Common checks:
 
 ```sh
-uv run --extra dev ruff check .
-uv run --extra dev pytest
+uv sync --extra dev --frozen
+uv run --frozen ruff check .
+uv run --frozen ruff format --check .
+uv run --frozen pytest
 ```
 
-Build a distribution:
+To validate the distributions, remove any existing `dist` directory and run:
 
 ```sh
-uv build
+uv run --frozen python -m build
+uv run --frozen twine check --strict dist/*
+uv run --frozen python scripts/inspect_distribution.py dist
 ```
+
+These commands build and inspect one wheel and one source distribution locally.
+They do not upload to PyPI or any other package index. CI additionally installs
+the wheel into an isolated environment, exercises every supported command outside
+the source tree, and renders and verifies the documented minimal job.
 
 The package has no network dependency at runtime.
