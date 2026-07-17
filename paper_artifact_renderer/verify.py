@@ -127,8 +127,7 @@ def _verify_pdf_metadata(pdf_path: Path) -> dict[str, str]:
         ]
         if metadata_hits:
             raise RuntimeError(
-                f"PDF metadata field {key!r} contains library/tool fingerprint(s) "
-                f"{', '.join(metadata_hits)}: {value!r}"
+                f"PDF metadata field {key!r} contains library/tool fingerprint(s) {', '.join(metadata_hits)}: {value!r}"
             )
         if value.startswith("D:2000"):
             raise RuntimeError(f"PDF metadata field {key!r} has invariant test date: {value!r}")
@@ -165,9 +164,7 @@ def _verify_pdf_renders(pdf_path: Path, expected_pages: int) -> None:
             raise RuntimeError(f"Poppler failed to render PDF streams: {detail}")
         rendered = sorted(Path(temp_dir).glob("page-*.png"))
         if len(rendered) != expected_pages:
-            raise RuntimeError(
-                f"Poppler rendered {len(rendered)} page(s), expected {expected_pages}"
-            )
+            raise RuntimeError(f"Poppler rendered {len(rendered)} page(s), expected {expected_pages}")
 
 
 def _find_pdftoppm() -> str | None:

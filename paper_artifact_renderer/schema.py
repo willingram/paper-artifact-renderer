@@ -118,9 +118,7 @@ def validate_job(job: dict[str, Any]) -> None:
             raise SchemaError(f"{page_path}.table.columns: expected non-empty string array")
         for row_index, row in enumerate(rows):
             if not isinstance(row, list) or len(row) != len(columns):
-                raise SchemaError(
-                    f"{page_path}.table.rows[{row_index}]: expected {len(columns)} cell(s)"
-                )
+                raise SchemaError(f"{page_path}.table.rows[{row_index}]: expected {len(columns)} cell(s)")
             if not all(isinstance(item, str) for item in row):
                 raise SchemaError(f"{page_path}.table.rows[{row_index}]: cells must be strings")
         annotations = require_list(page.get("annotations", []), f"{page_path}.annotations")

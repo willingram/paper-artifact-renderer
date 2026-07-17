@@ -559,9 +559,7 @@ def _apply_perspective(image: Image.Image, rng: random.Random) -> Image.Image:
     )
 
 
-def _perspective_coefficients(
-    points_a: list[tuple[int, int]], points_b: list[tuple[int, int]]
-) -> list[float]:
+def _perspective_coefficients(points_a: list[tuple[int, int]], points_b: list[tuple[int, int]]) -> list[float]:
     matrix = []
     vector = []
     for (x, y), (u, v) in zip(points_a, points_b, strict=True):
@@ -587,8 +585,7 @@ def _solve_linear_system(matrix: list[list[float]], vector: list[float]) -> list
                 continue
             factor = augmented[row][col]
             augmented[row] = [
-                value - factor * pivot_value
-                for value, pivot_value in zip(augmented[row], augmented[col], strict=True)
+                value - factor * pivot_value for value, pivot_value in zip(augmented[row], augmented[col], strict=True)
             ]
     return [augmented[row][-1] for row in range(n)]
 
@@ -651,9 +648,7 @@ def _write_image_only_pdf(image_paths: list[Path], pdf_path: Path, job: dict[str
         _patch_pdf_dates_and_guard(pdf_path, _pdf_date_from_job(job))
 
 
-def _center_text(
-    draw: ImageDraw.ImageDraw, box: list[int], text: str, font: ImageFont.FreeTypeFont
-) -> tuple[int, int]:
+def _center_text(draw: ImageDraw.ImageDraw, box: list[int], text: str, font: ImageFont.FreeTypeFont) -> tuple[int, int]:
     bbox = draw.textbbox((0, 0), text, font=font)
     text_w = bbox[2] - bbox[0]
     text_h = bbox[3] - bbox[1]
@@ -663,9 +658,7 @@ def _center_text(
     )
 
 
-def _text_bbox(
-    draw: ImageDraw.ImageDraw, xy: tuple[int, int], text: str, font: ImageFont.FreeTypeFont
-) -> list[int]:
+def _text_bbox(draw: ImageDraw.ImageDraw, xy: tuple[int, int], text: str, font: ImageFont.FreeTypeFont) -> list[int]:
     bbox = draw.textbbox(xy, text, font=font)
     return [int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])]
 
