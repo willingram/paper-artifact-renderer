@@ -95,6 +95,13 @@ Install Poppler separately if you want that extra check:
 - macOS: `brew install poppler`
 - Debian/Ubuntu/WSL: `sudo apt-get install poppler-utils`
 
+## Project documentation
+
+- [Design and public contracts](DESIGN.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Changelog](CHANGELOG.md)
+
 ## Development
 
 Common checks:

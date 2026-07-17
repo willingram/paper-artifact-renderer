@@ -6,6 +6,7 @@ sys.path.insert(0, str(ROOT))
 
 from scripts.inspect_distribution import (  # noqa: E402
     EXPECTED_ENTRY_POINTS,
+    GOVERNANCE_DOCUMENTS,
     Archive,
     distribution_paths,
     path_errors,
@@ -88,6 +89,46 @@ def test_sdist_contract_requires_only_documented_minimal_example() -> None:
     errors = sdist_errors(candidate, ROOT, "paper-artifact-renderer", "0.1.0")
 
     assert any("missing required sdist member: examples/minimal_job.json" in error for error in errors)
+
+
+def test_sdist_requires_each_governance_document_exactly_once() -> None:
+    assert {
+        "CHANGELOG.md",
+        "CONTRIBUTING.md",
+        "DESIGN.md",
+        "SECURITY.md",
+    } == GOVERNANCE_DOCUMENTS
+    root = "paper_artifact_renderer-0.1.0"
+    missing_errors = sdist_errors(
+        archive("sdist", ()),
+        ROOT,
+        "paper-artifact-renderer",
+        "0.1.0",
+    )
+    for document in GOVERNANCE_DOCUMENTS:
+        assert any(f"must contain {document} exactly once, found 0" in error for error in missing_errors)
+
+    duplicated = "CONTRIBUTING.md"
+    candidate = archive(
+        "sdist",
+        (
+            *(f"{root}/{document}" for document in sorted(GOVERNANCE_DOCUMENTS)),
+            f"{root}/{duplicated}",
+        ),
+    )
+
+    errors = sdist_errors(candidate, ROOT, "paper-artifact-renderer", "0.1.0")
+
+    assert any(f"must contain {duplicated} exactly once, found 2" in error for error in errors)
+
+
+def test_wheel_rejects_governance_documents() -> None:
+    candidate = archive("wheel", tuple(sorted(GOVERNANCE_DOCUMENTS)))
+
+    errors = wheel_errors(candidate, ROOT, "paper-artifact-renderer", "0.1.0")
+
+    for document in GOVERNANCE_DOCUMENTS:
+        assert any(f"unexpected wheel member: {document}" in error for error in errors)
 
 
 def test_distribution_filenames_require_setuptools_underscore_normalization(tmp_path: Path) -> None:

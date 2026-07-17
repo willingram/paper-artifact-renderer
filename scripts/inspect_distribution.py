@@ -18,6 +18,12 @@ from email.parser import BytesParser
 from pathlib import Path, PurePosixPath
 
 PACKAGE = "paper_artifact_renderer"
+GOVERNANCE_DOCUMENTS = {
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "DESIGN.md",
+    "SECURITY.md",
+}
 EXPECTED_ENTRY_POINTS = {
     "par": "paper_artifact_renderer.cli:main",
     "paper-artifact-renderer": "paper_artifact_renderer.cli:main",
@@ -306,6 +312,7 @@ def sdist_errors(archive: Archive, repository: Path, name: str, version: str) ->
         "pyproject.toml",
         "scripts/inspect_distribution.py",
     }
+    required.update(GOVERNANCE_DOCUMENTS)
     required.update(source_files(repository, PACKAGE))
     required.update(source_files(repository, "tests"))
 
@@ -313,6 +320,12 @@ def sdist_errors(archive: Archive, repository: Path, name: str, version: str) ->
         member = f"{root}/{relative}"
         if member not in archive.files:
             errors.append(f"{archive.path.name} is missing required sdist member: {relative}")
+
+    for document in sorted(GOVERNANCE_DOCUMENTS):
+        member = f"{root}/{document}"
+        occurrences = archive.names.count(member)
+        if occurrences != 1:
+            errors.append(f"{archive.path.name} must contain {document} exactly once, found {occurrences}")
 
     pkg_info = f"{root}/PKG-INFO"
     if pkg_info not in archive.files:
