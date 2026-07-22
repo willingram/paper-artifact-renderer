@@ -12,6 +12,8 @@ has been tagged, released, or published to a package index.
 - Local wheel and source-distribution inspection, strict metadata checking, and
   isolated installed-wheel smoke tests.
 - Project contribution, design, security, and changelog documentation.
+- Canonical project links in wheel and source-distribution metadata, with exact
+  artifact validation.
 
 ### Changed
 

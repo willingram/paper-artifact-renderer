@@ -39,6 +39,12 @@ dev = [
 par = "paper_artifact_renderer.cli:main"
 paper-artifact-renderer = "paper_artifact_renderer.cli:main"
 
+[project.urls]
+Homepage = "https://github.com/willingram/paper-artifact-renderer"
+Repository = "https://github.com/willingram/paper-artifact-renderer"
+Issues = "https://github.com/willingram/paper-artifact-renderer/issues"
+Changelog = "https://github.com/willingram/paper-artifact-renderer/blob/main/CHANGELOG.md"
+
 [tool.setuptools.packages.find]
 include = ["paper_artifact_renderer*"]
 

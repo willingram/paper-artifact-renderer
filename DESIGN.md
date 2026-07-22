@@ -175,6 +175,11 @@ entry points, required metadata, wheel `RECORD`, lean wheel contents, complete
 source contents, and absence of common development residue, generated outputs,
 credential-like files, and local-machine markers.
 
+Wheel `METADATA` and source-distribution `PKG-INFO` must each contain exactly the
+canonical Homepage, Repository, Issues, and Changelog project links declared in
+`pyproject.toml`. Missing, changed, extra, malformed, or duplicate labels fail
+artifact inspection.
+
 CI runs Ruff and the tests on Ubuntu, Windows, and macOS with Python 3.11 and
 3.14. A separate Ubuntu/Python 3.11 job builds the sdist and wheel, runs strict
 Twine and the inspector, installs the wheel outside the checkout, checks every

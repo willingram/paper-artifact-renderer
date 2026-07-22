@@ -6,10 +6,12 @@ sys.path.insert(0, str(ROOT))
 
 from scripts.inspect_distribution import (  # noqa: E402
     EXPECTED_ENTRY_POINTS,
+    EXPECTED_PROJECT_URLS,
     GOVERNANCE_DOCUMENTS,
     Archive,
     distribution_paths,
     path_errors,
+    project_url_errors,
     residue_errors,
     sdist_errors,
     source_files,
@@ -156,6 +158,62 @@ def test_par_entry_point_contract_is_exact() -> None:
         "par": "paper_artifact_renderer.cli:main",
         "paper-artifact-renderer": "paper_artifact_renderer.cli:main",
     }
+
+
+def test_project_url_contract_accepts_only_the_exact_four_urls() -> None:
+    assert EXPECTED_PROJECT_URLS == {
+        "Homepage": "https://github.com/willingram/paper-artifact-renderer",
+        "Repository": "https://github.com/willingram/paper-artifact-renderer",
+        "Issues": "https://github.com/willingram/paper-artifact-renderer/issues",
+        "Changelog": "https://github.com/willingram/paper-artifact-renderer/blob/main/CHANGELOG.md",
+    }
+    payload = _metadata_with_urls(EXPECTED_PROJECT_URLS)
+
+    assert project_url_errors(payload, "wheel METADATA") == []
+    assert project_url_errors(payload, "sdist PKG-INFO") == []
+
+
+def test_project_url_contract_rejects_missing_wrong_and_extra_urls() -> None:
+    missing = dict(EXPECTED_PROJECT_URLS)
+    missing.pop("Issues")
+    wrong = dict(EXPECTED_PROJECT_URLS)
+    wrong["Repository"] = "https://example.invalid/wrong"
+    extra = {**EXPECTED_PROJECT_URLS, "Documentation": "https://example.invalid/docs"}
+
+    for urls in (missing, wrong, extra):
+        errors = project_url_errors(_metadata_with_urls(urls), "METADATA")
+        assert any("Project-URLs are" in error for error in errors)
+
+
+def test_project_url_contract_rejects_malformed_and_duplicate_labels() -> None:
+    exact_lines = [f"Project-URL: {label}, {url}" for label, url in EXPECTED_PROJECT_URLS.items()]
+    payload = (
+        "\n".join(
+            [
+                "Metadata-Version: 2.4",
+                *exact_lines,
+                exact_lines[0],
+                "Project-URL: malformed",
+                "",
+                "",
+            ]
+        )
+    ).encode()
+
+    errors = project_url_errors(payload, "METADATA")
+
+    assert any("duplicate Project-URL label" in error for error in errors)
+    assert any("malformed Project-URL" in error for error in errors)
+
+
+def _metadata_with_urls(urls: dict[str, str]) -> bytes:
+    lines = [
+        "Metadata-Version: 2.4",
+        *(f"Project-URL: {label}, {url}" for label, url in urls.items()),
+        "",
+        "",
+    ]
+    return "\n".join(lines).encode()
 
 
 def test_wheel_rejects_files_outside_package_and_metadata() -> None:
